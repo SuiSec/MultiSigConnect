@@ -1,0 +1,228 @@
+/* Popup theme — mirrors the web app's LIGHT design tokens (app/src/index.css);
+   the web app defaults to light, so the popup does too. Light surfaces + blue
+   primary, with teal/green reserved for the brand mark and success/online
+   states so it reads as the same product as the web app. */
+:root {
+	color-scheme: light;
+	--background: #f4f7fb;
+	--card: #ffffff;
+	--field: #f4f7fb;
+	--secondary: #f0f5fc;
+	--border: #e3e9f2;
+	--foreground: #0b1a33;
+	--muted: #5b6b85;
+	--primary: #2563eb;
+	--primary-foreground: #ffffff;
+	--success: #059669;
+	--destructive: #dc2626;
+	--brand: #059669;
+}
+* {
+	box-sizing: border-box;
+}
+body {
+	margin: 0;
+	width: 320px;
+	font-family:
+		Inter, system-ui, -apple-system, sans-serif;
+	background: var(--background);
+	color: var(--foreground);
+}
+.wrap {
+	padding: 16px;
+}
+.brand {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+.brand .dot {
+	width: 18px;
+	height: 18px;
+	border-radius: 6px;
+	background: rgba(5, 150, 105, 0.14);
+	display: grid;
+	place-items: center;
+	color: var(--brand);
+	font-size: 12px;
+}
+.sub {
+	color: var(--muted);
+	font-size: 11px;
+	margin-bottom: 14px;
+}
+label {
+	display: block;
+	font-size: 11px;
+	color: var(--muted);
+	margin: 12px 0 4px;
+}
+input,
+select {
+	width: 100%;
+	padding: 8px 10px;
+	border-radius: 8px;
+	border: 1px solid var(--border);
+	background: var(--card);
+	color: var(--foreground);
+	font-size: 12px;
+	outline: none;
+}
+input:focus,
+select:focus {
+	border-color: var(--primary);
+}
+.mono {
+	font-family: ui-monospace, monospace;
+}
+.rowhead {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin-top: 6px;
+}
+.rowhead > span {
+	font-size: 11px;
+	color: var(--muted);
+}
+.rowhead .netbadge {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 3px 9px;
+	border-radius: 999px;
+	border: 1px solid var(--border);
+	background: var(--card);
+	color: #334155;
+	font-size: 11px;
+	text-transform: capitalize;
+}
+.rowhead .netbadge::before {
+	content: '';
+	width: 6px;
+	height: 6px;
+	border-radius: 999px;
+	background: var(--success);
+}
+.empty {
+	margin-top: 10px;
+	font-size: 12px;
+	color: var(--muted);
+	line-height: 1.45;
+}
+#list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin-top: 10px;
+}
+.item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: var(--card);
+}
+.ava {
+	width: 24px;
+	height: 24px;
+	flex: none;
+	border-radius: 6px;
+	display: grid;
+	place-items: center;
+	background: rgba(37, 99, 235, 0.12);
+	color: var(--primary);
+	font-size: 12px;
+	font-weight: 700;
+}
+.itn {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	flex: 1;
+}
+.itn .nm {
+	font-size: 12px;
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.itn .ad {
+	font-size: 11px;
+	color: var(--muted);
+}
+.on {
+	font-size: 10px;
+	color: var(--success);
+	flex: none;
+}
+button {
+	width: 100%;
+	margin-top: 16px;
+	padding: 9px;
+	border: 0;
+	border-radius: 8px;
+	background: var(--primary);
+	color: var(--primary-foreground);
+	font-weight: 600;
+	font-size: 13px;
+	cursor: pointer;
+}
+button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+.note {
+	margin-top: 14px;
+	padding: 9px 10px;
+	border-radius: 8px;
+	background: rgba(37, 99, 235, 0.08);
+	color: #1e40af;
+	font-size: 11px;
+	line-height: 1.45;
+}
+.saved {
+	margin-top: 10px;
+	font-size: 11px;
+	color: var(--success);
+	text-align: center;
+	min-height: 14px;
+}
+.error {
+	margin-top: 10px;
+	padding: 9px 10px;
+	border-radius: 8px;
+	background: rgba(220, 38, 38, 0.1);
+	color: #b91c1c;
+	font-size: 11px;
+	line-height: 1.45;
+}
+.imported {
+	margin-top: 12px;
+	padding: 9px 10px;
+	border-radius: 8px;
+	background: rgba(5, 150, 105, 0.12);
+	color: #047857;
+	font-size: 12px;
+	font-weight: 600;
+}
+details {
+	margin-top: 14px;
+}
+details summary {
+	font-size: 11px;
+	color: var(--muted);
+	cursor: pointer;
+	user-select: none;
+}
+details button {
+	margin-top: 10px;
+	background: var(--secondary);
+	color: var(--foreground);
+}
