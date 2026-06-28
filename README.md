@@ -50,6 +50,19 @@ bun run dev              # live-reload development
 Load the unpacked extension from `output/chrome-mv3` in
 `chrome://extensions` (Developer mode → Load unpacked).
 
+## Install manually (from a Release)
+
+While the Chrome Web Store listing is in review, you can install the extension
+from a GitHub Release:
+
+1. Download the `.zip` from the latest [Release](../../releases).
+2. Unzip it — you'll get a folder containing `manifest.json`.
+3. Open `chrome://extensions`, enable **Developer mode** (top right).
+4. Click **Load unpacked** and select the unzipped folder.
+
+> Manually loaded extensions get a random extension ID and do not auto-update.
+> Once the Web Store listing is live, prefer installing from there.
+
 ## License
 
 [Apache-2.0](./LICENSE)
