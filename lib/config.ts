@@ -40,3 +40,25 @@ export async function setConfig(
 ): Promise<void> {
 	await browser.storage.local.set({ [KEY]: config });
 }
+
+/**
+ * The web app URL is a trust anchor: its origin gates the multisig sync
+ * (APP_TO_EXT) and is the target the approval popup is opened against. Restrict
+ * it to https — localhost may use http for local development — and reject
+ * anything that isn't a parseable http(s) URL. This stops a social-engineered
+ * `javascript:` / `data:` / plain-http value from becoming a trusted sync
+ * origin or a MITM-able approval target.
+ */
+export function isAllowedWebAppUrl(value: string): boolean {
+	let url: URL;
+	try {
+		url = new URL(value);
+	} catch {
+		return false;
+	}
+	if (url.protocol === 'https:') return true;
+	return (
+		url.protocol === 'http:' &&
+		(url.hostname === 'localhost' || url.hostname === '127.0.0.1')
+	);
+}

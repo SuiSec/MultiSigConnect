@@ -6,7 +6,7 @@
 import { browser } from 'wxt/browser';
 
 import { normalizeCaptureMessage } from '../lib/capture-policy';
-import { getConfig } from '../lib/config';
+import { getConfig, isAllowedWebAppUrl } from '../lib/config';
 import {
 	APP_TO_EXT,
 	CONFIG_DATA_ATTR,
@@ -20,13 +20,15 @@ export default defineContentScript({
 		const cfg = await getConfig();
 		if (cfg.multisigs.length > 0) {
 			// DOM is shared across worlds — the MAIN-world wallet reads this.
+			// Privacy: only the on-chain-public address + composite public key
+			// cross the bridge. The user's private label (`name`) is NOT
+			// broadcast to pages — it stays in the extension UI only.
 			document.documentElement.setAttribute(
 				CONFIG_DATA_ATTR,
 				JSON.stringify({
 					network: cfg.network,
 					multisigs: cfg.multisigs.map((m) => ({
 						address: m.address,
-						name: m.name,
 						publicKey: m.publicKey,
 					})),
 				}),
@@ -34,17 +36,18 @@ export default defineContentScript({
 		}
 
 		await injectScript('/injected.js', { keepInDom: true });
+		// The wallet consumes the config synchronously on load (it also clears
+		// the attribute itself); strip it here too so it never lingers in the
+		// DOM for arbitrary page scripts / trackers to scrape.
+		document.documentElement.removeAttribute(CONFIG_DATA_ATTR);
 
 		// Trusted origin for multisig sync: ONLY the configured MultiSig web
 		// app may push a multisig list. A malicious dApp page has a different
 		// origin and is rejected — preventing spoofed accounts.
-		const trustedAppOrigin = (() => {
-			try {
-				return new URL(cfg.webAppUrl).origin;
-			} catch {
-				return '';
-			}
-		})();
+		const trustedAppOrigin =
+			isAllowedWebAppUrl(cfg.webAppUrl)
+				? new URL(cfg.webAppUrl).origin
+				: '';
 
 		window.addEventListener('message', (event) => {
 			if (event.source !== window) return;

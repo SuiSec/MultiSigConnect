@@ -36,8 +36,16 @@ const ICON =
 
 interface ConfigMultisig {
 	address: string;
-	name?: string;
 	publicKey?: string;
+}
+
+// A non-identifying account label derived from the public address — the user's
+// private multisig name is never sent to the page.
+function addressLabel(address: string): string {
+	const a = address.replace(/^0x/, '');
+	return a.length > 10
+		? `Multisig 0x${a.slice(0, 4)}…${a.slice(-4)}`
+		: `Multisig ${address}`;
 }
 
 function readConfig(): {
@@ -47,6 +55,9 @@ function readConfig(): {
 	const raw = document.documentElement.getAttribute(
 		CONFIG_DATA_ATTR,
 	);
+	// Consume once: clear immediately so the config does not linger in the
+	// shared DOM where any page script could read it.
+	document.documentElement.removeAttribute(CONFIG_DATA_ATTR);
 	if (!raw) return null;
 	try {
 		const cfg = JSON.parse(raw);
@@ -108,7 +119,7 @@ class MultisigWallet implements Wallet {
 						'sui:signTransaction',
 						'sui:signAndExecuteTransaction',
 					],
-					label: m.name || 'Multisig',
+					label: addressLabel(m.address),
 				}),
 		);
 	}

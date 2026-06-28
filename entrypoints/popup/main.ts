@@ -8,6 +8,7 @@ import { browser } from 'wxt/browser';
 import {
 	DEFAULT_CONFIG,
 	getConfig,
+	isAllowedWebAppUrl,
 	setConfig,
 	type MswConfig,
 	type MswMultisig,
@@ -110,6 +111,13 @@ function render(): void {
 	root
 		.querySelector('#save')!
 		.addEventListener('click', async () => {
+			if (!isAllowedWebAppUrl(cfg.webAppUrl)) {
+				setStatus(
+					'err',
+					'MultiSig app URL must be an https:// address.',
+				);
+				return;
+			}
 			await setConfig(cfg);
 			setStatus('ok', 'Settings saved.');
 		});
