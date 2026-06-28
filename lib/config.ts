@@ -62,3 +62,57 @@ export function isAllowedWebAppUrl(value: string): boolean {
 		(url.hostname === 'localhost' || url.hostname === '127.0.0.1')
 	);
 }
+
+/**
+ * The trusted origin derived from the web app URL, or null if the URL is not an
+ * allowed trust anchor. Both the content script (sync gate) and the background
+ * (sync sender check) derive the trusted origin through this single helper so
+ * the two stay in lockstep.
+ */
+export function trustedWebAppOrigin(value: string): string | null {
+	if (!isAllowedWebAppUrl(value)) return null;
+	return new URL(value).origin;
+}
+
+// Sui addresses are 0x-prefixed hex (≤32 bytes). Composite multisig public keys
+// arrive as standard base64.
+const SUI_ADDRESS_RE = /^0x[0-9a-f]{1,64}$/i;
+const BASE64_RE = /^[A-Za-z0-9+/]*={0,2}$/;
+
+function isValidBase64(value: string): boolean {
+	if (value.length === 0) return true; // address-only entry is allowed
+	return value.length % 4 === 0 && BASE64_RE.test(value);
+}
+
+/**
+ * Structurally validate the multisig list pushed in by the web app before it is
+ * persisted. A compromised (or buggy) web app could otherwise inject malformed
+ * entries — e.g. a non-base64 public key that throws in the injected wallet's
+ * `atob` and breaks wallet registration on every page. Entries that fail
+ * validation are dropped rather than trusted.
+ */
+export function sanitizeSyncedMultisigs(input: unknown): MswMultisig[] {
+	if (!Array.isArray(input)) return [];
+	const out: MswMultisig[] = [];
+	for (const entry of input) {
+		if (typeof entry !== 'object' || entry === null) continue;
+		const { address, name, publicKey } = entry as Record<
+			string,
+			unknown
+		>;
+		if (
+			typeof address !== 'string' ||
+			!SUI_ADDRESS_RE.test(address)
+		) {
+			continue;
+		}
+		const pk = typeof publicKey === 'string' ? publicKey : '';
+		if (!isValidBase64(pk)) continue;
+		out.push({
+			address,
+			name: typeof name === 'string' ? name : '',
+			publicKey: pk,
+		});
+	}
+	return out;
+}

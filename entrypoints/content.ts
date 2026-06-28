@@ -6,7 +6,7 @@
 import { browser } from 'wxt/browser';
 
 import { normalizeCaptureMessage } from '../lib/capture-policy';
-import { getConfig, isAllowedWebAppUrl } from '../lib/config';
+import { getConfig, trustedWebAppOrigin } from '../lib/config';
 import {
 	APP_TO_EXT,
 	CONFIG_DATA_ATTR,
@@ -44,10 +44,7 @@ export default defineContentScript({
 		// Trusted origin for multisig sync: ONLY the configured MultiSig web
 		// app may push a multisig list. A malicious dApp page has a different
 		// origin and is rejected — preventing spoofed accounts.
-		const trustedAppOrigin =
-			isAllowedWebAppUrl(cfg.webAppUrl)
-				? new URL(cfg.webAppUrl).origin
-				: '';
+		const trustedAppOrigin = trustedWebAppOrigin(cfg.webAppUrl) ?? '';
 
 		window.addEventListener('message', (event) => {
 			if (event.source !== window) return;

@@ -88,7 +88,9 @@ function park(input: {
 				chain: input.chain,
 				origin: location.origin,
 			},
-			'*',
+			// Same-window handoff to the ISOLATED-world content script;
+			// scope the message to this origin rather than broadcasting.
+			location.origin,
 		);
 	});
 	throw new Error(
@@ -104,24 +106,32 @@ class MultisigWallet implements Wallet {
 	readonly #accounts: ReadonlyWalletAccount[];
 
 	constructor(multisigs: ConfigMultisig[]) {
-		this.#accounts = multisigs.map(
-			(m) =>
-				new ReadonlyWalletAccount({
-					address: m.address,
-					// Composite multisig public key (MultiSigPublicKey raw
-					// bytes) from the relay — derives the address, which
-					// key-validating dApps require.
-					publicKey: m.publicKey
-						? fromBase64(m.publicKey)
-						: new Uint8Array(),
-					chains: SUI_CHAINS,
-					features: [
-						'sui:signTransaction',
-						'sui:signAndExecuteTransaction',
-					],
-					label: addressLabel(m.address),
-				}),
-		);
+		this.#accounts = multisigs
+			.map((m) => {
+				// A malformed public key (bad base64) must not take down
+				// wallet registration for every account — skip just that
+				// entry instead of throwing out of the constructor.
+				try {
+					return new ReadonlyWalletAccount({
+						address: m.address,
+						// Composite multisig public key (MultiSigPublicKey
+						// raw bytes) from the relay — derives the address,
+						// which key-validating dApps require.
+						publicKey: m.publicKey
+							? fromBase64(m.publicKey)
+							: new Uint8Array(),
+						chains: SUI_CHAINS,
+						features: [
+							'sui:signTransaction',
+							'sui:signAndExecuteTransaction',
+						],
+						label: addressLabel(m.address),
+					});
+				} catch {
+					return null;
+				}
+			})
+			.filter((a): a is ReadonlyWalletAccount => a !== null);
 	}
 
 	get accounts() {

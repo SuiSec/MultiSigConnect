@@ -7,7 +7,9 @@ import { browser } from 'wxt/browser';
 import { isConfiguredMultisigAddress } from '../lib/capture-policy';
 import {
 	getConfig,
+	sanitizeSyncedMultisigs,
 	setConfig,
+	trustedWebAppOrigin,
 	type MswConfig,
 	type MswMultisig,
 } from '../lib/config';
@@ -44,23 +46,31 @@ export default defineBackground(() => {
 		};
 
 		// MultiSig web app pushed the synced multisig list → persist it.
-		// (Origin was already validated by the content script.)
+		// The content script already origin-gates this, but the background
+		// re-checks the sender origin (symmetric with the capture path) and
+		// structurally sanitizes the payload — defense in depth so a future
+		// message path or a compromised web app cannot inject bad config.
 		if (
 			msg?.type === 'sync-multisigs' &&
 			Array.isArray(msg.multisigs)
 		) {
 			void (async () => {
 				const cfg = await getConfig();
+				const expectedOrigin = trustedWebAppOrigin(
+					cfg.webAppUrl,
+				);
+				if (
+					!expectedOrigin ||
+					senderOrigin(sender) !== expectedOrigin
+				) {
+					return;
+				}
 				await setConfig({
 					...cfg,
 					network:
 						(msg.network as MswConfig['network']) ??
 						cfg.network,
-					multisigs: msg.multisigs!.map((m) => ({
-						address: m.address,
-						name: m.name ?? '',
-						publicKey: m.publicKey,
-					})),
+					multisigs: sanitizeSyncedMultisigs(msg.multisigs),
 				});
 			})();
 			return false;
