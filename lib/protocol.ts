@@ -9,6 +9,7 @@ export interface CapturePayload {
 	type: 'capture';
 	// Serialized Transaction (Transaction.toJSON()).
 	txJson: string;
+	address: string;
 	chain: string;
 	origin: string;
 }
