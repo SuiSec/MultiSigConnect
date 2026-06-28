@@ -7,7 +7,7 @@ export default defineConfig({
 	manifest: {
 		name: 'MultiSig — Multisig Connector',
 		description:
-			'Presents a Sui multisig as a read-only wallet to any dApp and routes captured transactions to multisig approval. Holds no keys, never signs.',
+			'Read-only Sui multisig wallet for any dApp. Routes captured signing requests to multisig approval. Holds no keys, never signs.',
 		permissions: ['storage', 'tabs'],
 		// No host_permissions: the extension never contacts the relay. It is fed
 		// entirely by the web app via the content-script bridge (postMessage →
