@@ -5,6 +5,7 @@
 
 import { browser } from 'wxt/browser';
 
+import { normalizeCaptureMessage } from '../lib/capture-policy';
 import { getConfig } from '../lib/config';
 import {
 	APP_TO_EXT,
@@ -54,13 +55,12 @@ export default defineContentScript({
 				data?.channel === PAGE_TO_CONTENT &&
 				data?.type === 'capture'
 			) {
-				browser.runtime.sendMessage({
-					type: 'capture',
-					txJson: data.txJson,
-					address: data.address,
-					chain: data.chain,
-					origin: data.origin,
-				});
+				const capture = normalizeCaptureMessage(
+					data,
+					event.origin,
+					cfg.multisigs,
+				);
+				if (capture) browser.runtime.sendMessage(capture);
 				return;
 			}
 

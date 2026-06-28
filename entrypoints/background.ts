@@ -4,6 +4,7 @@
 
 import { browser } from 'wxt/browser';
 
+import { isConfiguredMultisigAddress } from '../lib/capture-policy';
 import {
 	getConfig,
 	setConfig,
@@ -17,8 +18,21 @@ function encodePayload(payload: unknown): string {
 	return btoa(unescape(encodeURIComponent(json)));
 }
 
+function senderOrigin(sender: {
+	url?: string;
+	tab?: { url?: string };
+}): string | null {
+	const url = sender.url ?? sender.tab?.url;
+	if (!url) return null;
+	try {
+		return new URL(url).origin;
+	} catch {
+		return null;
+	}
+}
+
 export default defineBackground(() => {
-	browser.runtime.onMessage.addListener((message) => {
+	browser.runtime.onMessage.addListener((message, sender) => {
 		const msg = message as {
 			type?: string;
 			txJson?: string;
@@ -54,14 +68,28 @@ export default defineBackground(() => {
 
 		// dApp transaction captured → open the approval page. A focused popup
 		// window (mobile layout, no sidebar) reads like a wallet confirm.
-		if (msg?.type === 'capture' && msg.txJson && msg.address) {
+		if (msg?.type === 'capture') {
 			void (async () => {
 				const cfg = await getConfig();
+				if (
+					typeof msg.txJson !== 'string' ||
+					!isConfiguredMultisigAddress(
+						msg.address,
+						cfg.multisigs,
+					)
+				) {
+					return;
+				}
+
+				const actualOrigin = senderOrigin(sender);
+				const dappOrigin =
+					actualOrigin ??
+					(typeof msg.origin === 'string' ? msg.origin : '');
 				const fragment = encodePayload({
 					address: msg.address,
 					network: cfg.network,
 					txJson: msg.txJson,
-					dapp: msg.origin ?? '',
+					dapp: dappOrigin,
 				});
 				const base = cfg.webAppUrl.replace(/\/+$/, '');
 				await browser.windows.create({
