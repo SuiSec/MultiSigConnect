@@ -8,6 +8,14 @@ The extension presents Sui multisig wallets as standard [Wallet Standard](https:
 > and parked for multisig approval — the extension itself has zero signing
 > ability and zero private-key material.
 
+## Key properties
+
+- **Zero signing capability.** The extension holds no private keys and cannot sign anything. A fully compromised extension gives an attacker nothing to exploit — there is no signing material to steal.
+- **No network access.** The extension has no `host_permissions` and makes zero independent network requests. All multisig data flows in from the trusted MultiSig web app via origin-validated `postMessage` → `chrome.storage`. It cannot exfiltrate data and cannot be used as a network pivot.
+- **Works with any Sui dApp — no dApp changes required.** MultiSig Connect presents each multisig as a standard [Wallet Standard](https://github.com/wallet-standard/wallet-standard) account. DEXes, lending protocols, NFT platforms, governance portals — if a Sui dApp supports wallets, it works with multisig without modification.
+- **Every captured transaction is security-analysed before signing.** In the companion MultiSig web app, each co-signer independently decodes the raw transaction bytes and runs a local dry-run simulation against live Sui chain state before committing a signature. No blind approvals, no relay-provided descriptions taken on trust.
+- **Free and requires no registration.** Install the extension, connect your Sui wallet at [multisig.suisec.app](https://multisig.suisec.app), and go.
+
 ## Why this extension exists
 
 A Sui multisig address is a valid on-chain account, but signing for it requires multiple members to coordinate partial signatures — something no ordinary browser wallet can do inline. Without this extension, a multisig team has to manually copy transaction bytes out of a dApp and into a coordination tool. MultiSig Connect eliminates that step: it injects the multisig as a wallet the dApp recognises, intercepts the signing request, and parks it as a pending proposal in the [MultiSig web app](https://multisig.suisec.app) for members to review and threshold-sign.
