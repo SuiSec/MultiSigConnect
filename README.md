@@ -1,15 +1,22 @@
 # MultiSig Connect
 
-A browser extension that presents a **Sui multisig** as a **read-only wallet** to
-any dApp, and routes captured transactions to multisig approval in the web app.
+**MultiSig Connect** is the browser extension component of [MultiSig](https://multisig.suisec.app) — a non-custodial Sui blockchain multisig console built by the [SuiSec team](https://x.com/suisecurity) (@suisecurity).
+
+The extension presents Sui multisig wallets as standard [Wallet Standard](https://github.com/wallet-standard/wallet-standard) accounts to any dApp, letting multisig teams use DEXes, NFT platforms, governance portals, and any other Sui dApp without requiring the dApp to add special multisig support. Transactions initiated in a dApp are captured and routed to the [MultiSig web app](https://multisig.suisec.app) for threshold approval.
 
 > **Holds no keys. Never signs.** Every signing request from a dApp is captured
 > and parked for multisig approval — the extension itself has zero signing
 > ability and zero private-key material.
 
+## Why this extension exists
+
+A Sui multisig address is a valid on-chain account, but signing for it requires multiple members to coordinate partial signatures — something no ordinary browser wallet can do inline. Without this extension, a multisig team has to manually copy transaction bytes out of a dApp and into a coordination tool. MultiSig Connect eliminates that step: it injects the multisig as a wallet the dApp recognises, intercepts the signing request, and parks it as a pending proposal in the [MultiSig web app](https://multisig.suisec.app) for members to review and threshold-sign.
+
+This means any Sui multisig can interact with the full Sui ecosystem — swaps, lending, staking, governance — without the dApp needing to know it is a multisig.
+
 ## How it works
 
-- Injects a [Wallet-Standard](https://github.com/wallet-standard/wallet-standard)
+- Injects a [Wallet Standard](https://github.com/wallet-standard/wallet-standard)
   wallet into every dApp page, exposing each multisig the connected wallet
   belongs to as a **`ReadonlyWalletAccount`**.
 - When a dApp asks the "wallet" to sign, the request is intercepted and forwarded
@@ -26,6 +33,20 @@ any dApp, and routes captured transactions to multisig approval in the web app.
   trusted web app via origin-checked `postMessage`.
 - The companion web app's origin is validated (`event.origin`) before any data is
   accepted into storage.
+- Even if the extension were fully compromised, there are no keys and no signing
+  capability to exploit.
+
+## Part of the MultiSig product
+
+This extension is one component of the MultiSig product by SuiSec:
+
+| Component | Purpose |
+|---|---|
+| [Web app](https://multisig.suisec.app) | Create multisig wallets, propose and sign transactions, publish and verify Move packages |
+| **Browser extension** (this repo) | Present multisig wallets to any Sui dApp; capture and park signing requests |
+| Relay (api.suisec.app) | Non-custodial coordination: stores proposals and partial signatures, never holds keys |
+
+MultiSig is free to use and requires no account registration — connect your wallet and go.
 
 ## Configuration
 
